@@ -6,8 +6,10 @@ from functools import wraps
 from flask import Flask, render_template, request, send_file, redirect, url_for, flash, session
 import seat_plan_generator as spg  # Our PDF generator module
 
+
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here'  # Replace with a secure key
+app.secret_key = os.urandom(24)
+
 
 # ------------------------------------------------------------------
 # Simple User Database (In production, use a proper database and hashed passwords)
