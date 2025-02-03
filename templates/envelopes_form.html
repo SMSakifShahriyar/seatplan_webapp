@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Generate Envelopes PDF{% endblock %}
+{% block content %}
+<div class="container my-5">
+  <div class="card mx-auto p-4" style="max-width:600px;">
+    <h2 class="text-center mb-3">Generate Envelopes PDF</h2>
+    <p class="text-center text-muted">Example:</p>
+    <div class="text-center mb-4">
+      <img src="{{ url_for('static', filename='ENVELOPES_EXAMPLE.PNG') }}" alt="Envelopes Example" class="img-fluid">
+    </div>
+    <form method="post">
+      <div class="mb-3">
+        <label for="line1" class="form-label">Header Line 1:</label>
+        <input type="text" name="line1" id="line1" class="form-control" value="DEPARTMENT OF CIVIL ENGINEERING" required>
+      </div>
+      <div class="mb-3">
+        <label for="line2" class="form-label">Header Line 2:</label>
+        <input type="text" name="line2" id="line2" class="form-control" value="UTTARA UNIVERSITY" required>
+      </div>
+      <div class="mb-3">
+        <label for="line3" class="form-label">Header Line 3:</label>
+        <input type="text" name="line3" id="line3" class="form-control" value="MAKEUP SEMESTER FINAL EXAM" required>
+      </div>
+      <div class="mb-3">
+        <label for="line4" class="form-label">Header Line 4:</label>
+        <input type="text" name="line4" id="line4" class="form-control" value="FALL 2024 SEMESTER" required>
+      </div>
+      <button type="submit" class="btn btn-info w-100">Generate Envelopes PDF</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
