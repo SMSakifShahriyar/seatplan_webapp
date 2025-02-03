@@ -1,7 +1,7 @@
 # Use an official Python 3.9 slim image as the base
 FROM python:3.9-slim
 
-# Set environment variables to improve Python performance
+# Set environment variables for Python
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
@@ -19,8 +19,12 @@ COPY . .
 # Expose the port that your app will run on
 EXPOSE 8000
 
+# Set environment variables for Flask
+ENV FLASK_APP=app.py
+ENV FLASK_ENV=production
+
 # Install Gunicorn for production serving
 RUN pip install gunicorn
 
-# Use Gunicorn to run your Flask application (adjust the port if needed)
+# Use Gunicorn to run your Flask application on port 8000
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "app:app"]
