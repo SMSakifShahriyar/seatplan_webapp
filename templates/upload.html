@@ -1,28 +1,40 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Upload Files - Seat Plan Generator</title>
+  <!-- Include Bootstrap CSS via CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='custom.css') }}" rel="stylesheet">
 </head>
-<body>
-  <h2>Upload Files for Seat Plan Generation</h2>
-  <form method="post" enctype="multipart/form-data">
-    <label>PDF Files (ZIP):</label>
-    <input type="file" name="pdf_zip"><br><br>
-    <label>Room Info (room_info.xlsx):</label>
-    <input type="file" name="room_info"><br><br>
-    <input type="submit" value="Generate Seat Plan">
-  </form>
-  <br>
-  <a href="{{ url_for('logout') }}">Logout</a>
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <ul>
-      {% for message in messages %}
-        <li>{{ message }}</li>
-      {% endfor %}
-      </ul>
-    {% endif %}
-  {% endwith %}
+<body class="bg-light">
+  <div class="container mt-5">
+    <h2 class="text-center mb-4">Upload Files for Seat Plan Generation</h2>
+    <form method="post" enctype="multipart/form-data">
+      <div class="mb-3">
+        <label for="pdf_zip" class="form-label">PDF Files (ZIP):</label>
+        <input type="file" class="form-control" name="pdf_zip" id="pdf_zip" accept=".zip" required>
+      </div>
+      <div class="mb-3">
+        <label for="room_info" class="form-label">Room Info (room_info.xlsx):</label>
+        <input type="file" class="form-control" name="room_info" id="room_info" accept=".xlsx" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Generate Seat Plan</button>
+    </form>
+    <div class="text-center mt-3">
+      <a href="{{ url_for('logout') }}" class="btn btn-secondary">Logout</a>
+    </div>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert alert-danger mt-3" role="alert">
+          {% for message in messages %}
+            <div>{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+  </div>
+  <!-- Bootstrap JS and dependencies (optional) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
