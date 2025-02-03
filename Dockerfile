@@ -13,10 +13,10 @@ COPY requirements.txt .
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy the entire application code to the working directory
+# Copy the entire application code into the container
 COPY . .
 
-# Expose the port that your app will run on
+# Expose port 8000 for the application
 EXPOSE 8000
 
 # Set environment variables for Flask
@@ -26,5 +26,5 @@ ENV FLASK_ENV=production
 # Install Gunicorn for production serving
 RUN pip install gunicorn
 
-# Run the app using Gunicorn on port 8000
+# Use Gunicorn to run the application on port 8000
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "app:app"]
