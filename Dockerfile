@@ -16,7 +16,7 @@ RUN pip install --upgrade pip && \
 # Copy the entire application code to the working directory
 COPY . .
 
-# Expose the port that your app will run on
+# Expose the port that your app will run on (8000)
 EXPOSE 8000
 
 # Set environment variables for Flask
