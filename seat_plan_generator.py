@@ -703,7 +703,8 @@ def generate_attendance_sheet_pdf(group_info, student_list, metadata, room_no, g
     pdf.set_auto_page_break(True, margin=10)
     pdf.add_page()
     
-    logo_path = r"C:\Path\To\Your\logo.png"  # Change to your logo path
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    logo_path = os.path.join(BASE_DIR, "assets", "uu.png")
     logo_width = 30
     logo_x = (210 - logo_width) / 2
     try:
