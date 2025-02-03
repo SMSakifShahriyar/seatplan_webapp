@@ -1,27 +1,24 @@
 # app.py
 import os
-import uuid
-import zipfile
+import json
 from functools import wraps
-from flask import Flask, render_template, request, send_file, redirect, url_for, flash, session
-import seat_plan_generator as spg  # Our PDF generator module
-
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 
 app = Flask(__name__)
+
+# Generate a new secret key on each startup to force re‑login
 app.secret_key = os.urandom(24)
 
-
-# ------------------------------------------------------------------
-# Simple User Database (In production, use a proper database and hashed passwords)
-# ------------------------------------------------------------------
-USERS = {
+# Load user credentials from an environment variable, falling back to defaults
+default_users = {
     "user1": "password1",
     "user2": "password2"
 }
+USERS = json.loads(os.environ.get("USERS_CREDENTIALS", json.dumps(default_users)))
 
-# ------------------------------------------------------------------
-# Login Required Decorator
-# ------------------------------------------------------------------
+# -----------------------------
+# Helper: Login Required Decorator
+# -----------------------------
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -31,26 +28,16 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# ------------------------------------------------------------------
-# Helper functions to manage upload folder per session
-# ------------------------------------------------------------------
-def create_session_folder():
-    session_id = str(uuid.uuid4())
-    base_dir = os.path.join("uploads", session_id)
-    os.makedirs(base_dir, exist_ok=True)
-    session["session_folder"] = base_dir
-    return base_dir
+# -----------------------------
+# Routes
+# -----------------------------
 
-def get_session_folder():
-    folder = session.get("session_folder")
-    if folder and os.path.exists(folder):
-        return folder
-    else:
-        return None
+# Default route always redirects to the login page.
+@app.route("/")
+def index():
+    return redirect(url_for("login"))
 
-# ------------------------------------------------------------------
-# Login Routes
-# ------------------------------------------------------------------
+# Login page route
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -58,60 +45,32 @@ def login():
         password = request.form.get("password")
         if username in USERS and USERS[username] == password:
             session["username"] = username
-            # Removed flash message here
+            # No flash message to keep things minimal
             return redirect(url_for("dashboard"))
         else:
             flash("Invalid username or password. Please try again.")
             return render_template("login.html")
     return render_template("login.html")
 
+# Logout route: clears the session and returns to the login page
 @app.route("/logout")
 def logout():
     session.pop("username", None)
     flash("You have been logged out.")
     return redirect(url_for("login"))
 
-# ------------------------------------------------------------------
-# Route: Upload Files (only once per session)
-# ------------------------------------------------------------------
+# Dashboard route (protected)
+@app.route("/dashboard")
+@login_required
+def dashboard():
+    return render_template("dashboard.html")
+
+# Example: File upload route (you can add your actual file-upload logic here)
 @app.route("/upload_files", methods=["GET", "POST"])
 @login_required
 def upload_files():
-    if request.method == "POST":
-        pdf_zip = request.files.get("pdf_zip")
-        room_info = request.files.get("room_info")
-        if not pdf_zip or not room_info:
-            flash("Please upload both the PDF ZIP and the room_info.xlsx file.")
-            return redirect(url_for("upload_files"))
-        base_dir = create_session_folder()
-        pdf_zip_path = os.path.join(base_dir, "pdfs.zip")
-        room_info_path = os.path.join(base_dir, "room_info.xlsx")
-        pdf_zip.save(pdf_zip_path)
-        room_info.save(room_info_path)
-        # Extract PDFs ZIP
-        pdf_extract_folder = os.path.join(base_dir, "pdfs")
-        os.makedirs(pdf_extract_folder, exist_ok=True)
-        with zipfile.ZipFile(pdf_zip_path, "r") as zip_ref:
-            zip_ref.extractall(pdf_extract_folder)
-        # Update module globals
-        spg.PDF_INPUT_FOLDER = pdf_extract_folder
-        spg.MERGED_EXCEL_PATH = os.path.join(base_dir, "merged_excel.xlsx")
-        spg.ROOM_INFO_PATH = room_info_path
-        spg.OUTPUT_FOLDER = os.path.join(base_dir, "output")
-        os.makedirs(spg.OUTPUT_FOLDER, exist_ok=True)
-        flash("Files uploaded successfully!")
-        return redirect(url_for("dashboard"))
+    # For now, simply render an upload page.
     return render_template("upload_files.html")
-
-# ------------------------------------------------------------------
-# Dashboard Route
-# ------------------------------------------------------------------
-@app.route("/")
-@login_required
-def dashboard():
-    if not get_session_folder():
-        return redirect(url_for("upload_files"))
-    return render_template("dashboard.html")
 
 # ------------------------------------------------------------------
 # PDF Generation Routes
@@ -200,5 +159,6 @@ def generate_envelopes_pdf_route():
     return render_template("envelopes_form.html")
 
 if __name__ == "__main__":
+    # When running with 'python app.py', Flask's development server will run on port 5000.
+    # In production (e.g. via Gunicorn in your Dockerfile) this block is ignored.
     app.run(debug=True)
-
