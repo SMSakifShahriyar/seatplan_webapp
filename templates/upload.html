@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Upload Files - Seat Plan Generator</title>
+</head>
+<body>
+  <h2>Upload Files for Seat Plan Generation</h2>
+  <form method="post" enctype="multipart/form-data">
+    <label>PDF Files (ZIP):</label>
+    <input type="file" name="pdf_zip"><br><br>
+    <label>Room Info (room_info.xlsx):</label>
+    <input type="file" name="room_info"><br><br>
+    <input type="submit" value="Generate Seat Plan">
+  </form>
+  <br>
+  <a href="{{ url_for('logout') }}">Logout</a>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul>
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+</body>
+</html>
