@@ -198,4 +198,4 @@ def generate_envelopes_pdf_route():
     return render_template("envelopes_form.html")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True)  # This is only used when running directly (not via Gunicorn)
