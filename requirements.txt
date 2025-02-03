@@ -4,4 +4,6 @@ pandas
 fpdf
 python-dateutil
 Werkzeug==2.2.3
+openpyxl
+
 
