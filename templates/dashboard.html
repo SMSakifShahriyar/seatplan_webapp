@@ -3,25 +3,17 @@
 {% block content %}
 <div class="container mt-5">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 style="font-weight: 400;">PDF Generator Dashboard</h1>
+    <h1 style="font-weight: 400;">Dashboard</h1>
     <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
   </div>
-  <div class="text-center mb-4">
-    <a href="{{ url_for('upload_files') }}" class="btn btn-warning">Upload New Files</a>
+  <div class="mb-4 text-center">
+    <a href="{{ url_for('upload_files') }}" class="btn btn-warning w-100" style="max-width: 400px;">Upload New Files</a>
   </div>
-  <div class="row g-3">
-    <div class="col-md-6">
-      <a href="{{ url_for('generate_seat_plan_pdf') }}" class="btn btn-primary w-100">Generate Seat Plan PDF</a>
-    </div>
-    <div class="col-md-6">
-      <a href="{{ url_for('generate_attendance_pdf') }}" class="btn btn-secondary w-100">Generate Attendance Sheet PDF</a>
-    </div>
-    <div class="col-md-6">
-      <a href="{{ url_for('generate_summary_pdf_route') }}" class="btn btn-success w-100">Generate Summary PDF</a>
-    </div>
-    <div class="col-md-6">
-      <a href="{{ url_for('generate_envelopes_pdf_route') }}" class="btn btn-info w-100">Generate Envelopes PDF</a>
-    </div>
+  <div class="d-grid gap-3" style="max-width: 400px; margin: 0 auto;">
+    <a href="{{ url_for('generate_seat_plan_pdf') }}" class="btn btn-custom">Generate Seat Plan PDF</a>
+    <a href="{{ url_for('generate_attendance_pdf') }}" class="btn btn-custom">Generate Attendance Sheet PDF</a>
+    <a href="{{ url_for('generate_summary_pdf_route') }}" class="btn btn-custom">Generate Summary PDF</a>
+    <a href="{{ url_for('generate_envelopes_pdf_route') }}" class="btn btn-custom">Generate Envelopes PDF</a>
   </div>
 </div>
 {% endblock %}

@@ -4,9 +4,8 @@
 <div class="container my-5">
   <div class="card mx-auto p-4" style="max-width:600px;">
     <h2 class="text-center mb-3" style="font-weight: 400;">Generate Envelopes PDF</h2>
-    <p class="text-center text-muted">Example:</p>
-    <div class="text-center mb-4">
-      <img src="{{ url_for('static', filename='ENVELOPES_EXAMPLE.PNG') }}" alt="Envelopes Example" class="img-fluid" style="max-width:100%;">
+    <div class="text-center mb-3">
+      <img src="{{ url_for('static', filename='ENVELOPES_EXAMPLE.PNG') }}" alt="Envelopes Example" class="img-fluid">
     </div>
     <form method="post">
       <div class="mb-3">
@@ -25,7 +24,7 @@
         <label for="line4" class="form-label">Header Line 4</label>
         <input type="text" name="line4" id="line4" class="form-control" value="FALL 2024 SEMESTER" required>
       </div>
-      <button type="submit" class="btn btn-info w-100">Generate Envelopes PDF</button>
+      <button type="submit" class="btn btn-custom w-100">Generate Envelopes PDF</button>
     </form>
   </div>
 </div>
