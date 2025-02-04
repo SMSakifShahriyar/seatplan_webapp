@@ -3,32 +3,92 @@
 <head>
   <meta charset="UTF-8">
   <title>{% block title %}PDF Generator{% endblock %}</title>
-  <!-- Bootstrap CSS -->
+  <!-- Bootstrap CSS (Using Dark theme customization via custom CSS) -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Google Fonts: Roboto -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
+    /* Global dark theme styling */
     body {
-      background-color: #ffffff; /* blank white background */
+      background-color: #000;
+      color: #eee;
       font-family: 'Roboto', sans-serif;
       margin: 0;
-      padding-bottom: 120px; /* reserve space for footer */
+      padding-bottom: 120px; /* for footer space */
+    }
+    a {
+      color: #66afe9;
+      text-decoration: none;
+    }
+    a:hover {
+      color: #99ccff;
+      text-decoration: underline;
+    }
+    .card {
+      background-color: #111;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+    }
+    .form-control {
+      background-color: #222;
+      border: 1px solid #444;
+      color: #eee;
+    }
+    .form-control::placeholder {
+      color: #888;
+    }
+    .btn-primary {
+      background-color: #444;
+      border-color: #444;
+    }
+    .btn-primary:hover {
+      background-color: #555;
+      border-color: #555;
+    }
+    .btn-secondary {
+      background-color: #555;
+      border-color: #555;
+    }
+    .btn-secondary:hover {
+      background-color: #666;
+      border-color: #666;
+    }
+    .btn-success {
+      background-color: #006600;
+      border-color: #006600;
+    }
+    .btn-success:hover {
+      background-color: #007700;
+      border-color: #007700;
+    }
+    .btn-info {
+      background-color: #004466;
+      border-color: #004466;
+    }
+    .btn-info:hover {
+      background-color: #005577;
+      border-color: #005577;
+    }
+    .btn-warning {
+      background-color: #665500;
+      border-color: #665500;
+    }
+    .btn-warning:hover {
+      background-color: #776600;
+      border-color: #776600;
     }
     .footer {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      background-color: rgba(255,255,255,0.95);
-      padding: 12px 16px;
-      border-radius: 6px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      font-size: 1.1rem;
-      color: #333;
+      background-color: rgba(0, 0, 0, 0.9);
+      padding: 16px 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(255,255,255,0.1);
+      font-size: 1.2rem;
+      color: #ccc;
       text-align: right;
-    }
-    /* Optional: Smooth transition on buttons */
-    .btn {
-      transition: background-color 0.3s ease, border-color 0.3s ease;
     }
   </style>
   {% block head %}{% endblock %}
@@ -41,7 +101,6 @@
     Lecturer, Department of Civil Engineering<br>
     Uttara University, Dhaka
   </div>
-  <!-- Bootstrap Bundle with Popper -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   {% block scripts %}{% endblock %}
 </body>
