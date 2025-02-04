@@ -2,23 +2,33 @@
 import os
 import json
 from functools import wraps
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file
+import zipfile
+import seat_plan_generator as spg  # This module must contain your PDF-generation functions
 
 app = Flask(__name__)
 
-# Generate a new secret key on each startup to force re‑login
-app.secret_key = os.urandom(24)
+# Use a fixed secret key for session persistence. Change this value for production.
+app.secret_key = "my-fixed-secret-key-please-change"
 
-# Load user credentials from an environment variable, falling back to defaults
+# Load user credentials from an environment variable, falling back to defaults.
 default_users = {
     "user1": "password1",
     "user2": "password2"
 }
 USERS = json.loads(os.environ.get("USERS_CREDENTIALS", json.dumps(default_users)))
 
-# -----------------------------
-# Helper: Login Required Decorator
-# -----------------------------
+def get_session_folder():
+    """
+    Returns a folder path based on the logged-in username.
+    Creates the folder if it does not exist.
+    """
+    username = session.get("username", "default")
+    folder = os.path.join(os.getcwd(), "uploads", username)
+    if not os.path.exists(folder):
+        os.makedirs(folder, exist_ok=True)
+    return folder
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -32,12 +42,12 @@ def login_required(f):
 # Routes
 # -----------------------------
 
-# Default route always redirects to the login page.
+# Default route always redirects to login.
 @app.route("/")
 def index():
     return redirect(url_for("login"))
 
-# Login page route
+# Login route.
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -45,36 +55,36 @@ def login():
         password = request.form.get("password")
         if username in USERS and USERS[username] == password:
             session["username"] = username
-            # No flash message to keep things minimal
             return redirect(url_for("dashboard"))
         else:
             flash("Invalid username or password. Please try again.")
             return render_template("login.html")
     return render_template("login.html")
 
-# Logout route: clears the session and returns to the login page
+# Logout route.
 @app.route("/logout")
 def logout():
     session.pop("username", None)
     flash("You have been logged out.")
     return redirect(url_for("login"))
 
-# Dashboard route (protected)
+# Dashboard route (protected).
 @app.route("/dashboard")
 @login_required
 def dashboard():
     return render_template("dashboard.html")
 
-# Example: File upload route (you can add your actual file-upload logic here)
+# Upload files route (protected).
 @app.route("/upload_files", methods=["GET", "POST"])
 @login_required
 def upload_files():
-    # For now, simply render an upload page.
+    # (Insert your file-upload logic here if needed.)
     return render_template("upload_files.html")
 
-# ------------------------------------------------------------------
+# -----------------------------
 # PDF Generation Routes
-# ------------------------------------------------------------------
+# -----------------------------
+
 @app.route("/generate_seat_plan", methods=["GET", "POST"])
 @login_required
 def generate_seat_plan_pdf():
@@ -159,6 +169,4 @@ def generate_envelopes_pdf_route():
     return render_template("envelopes_form.html")
 
 if __name__ == "__main__":
-    # When running with 'python app.py', Flask's development server will run on port 5000.
-    # In production (e.g. via Gunicorn in your Dockerfile) this block is ignored.
     app.run(debug=True)
