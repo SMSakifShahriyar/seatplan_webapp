@@ -5,18 +5,26 @@
   <title>{% block title %}PDF Generator{% endblock %}</title>
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Font: Roboto -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     body {
-      background-color: #f4f4f4;
-      margin-bottom: 60px; /* space for footer */
+      background-color: #ffffff; /* Blank white background */
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding-bottom: 100px; /* Reserve space for footer */
     }
     .footer {
       position: fixed;
-      bottom: 10px;
-      right: 10px;
+      bottom: 20px;
+      right: 20px;
+      font-size: 1rem;
+      color: #444;
+      background: rgba(255,255,255,0.9);
+      padding: 10px;
+      border-radius: 4px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
       text-align: right;
-      font-size: 0.8rem;
-      color: #666;
     }
   </style>
   {% block head %}{% endblock %}
@@ -29,5 +37,6 @@
     Lecturer, Department of Civil Engineering<br>
     Uttara University, Dhaka
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
