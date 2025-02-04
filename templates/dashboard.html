@@ -10,10 +10,22 @@
     <a href="{{ url_for('upload_files') }}" class="btn btn-warning w-100" style="max-width: 400px;">Upload New Files</a>
   </div>
   <div class="d-grid gap-3" style="max-width: 400px; margin: 0 auto;">
-    <a href="{{ url_for('generate_seat_plan_pdf') }}" class="btn btn-custom">Generate Seat Plan PDF</a>
-    <a href="{{ url_for('generate_attendance_pdf') }}" class="btn btn-custom">Generate Attendance Sheet PDF</a>
-    <a href="{{ url_for('generate_summary_pdf_route') }}" class="btn btn-custom">Generate Summary PDF</a>
-    <a href="{{ url_for('generate_envelopes_pdf_route') }}" class="btn btn-custom">Generate Envelopes PDF</a>
+    <a href="{{ url_for('generate_seat_plan_pdf') }}" class="btn w-100" 
+       style="background-color: #d3d3d3; border: 1px solid #b0b0b0; color: black;">
+       Generate Seat Plan PDF
+    </a>
+    <a href="{{ url_for('generate_attendance_pdf') }}" class="btn w-100" 
+       style="background-color: #d3d3d3; border: 1px solid #b0b0b0; color: black;">
+       Generate Attendance Sheet PDF
+    </a>
+    <a href="{{ url_for('generate_summary_pdf_route') }}" class="btn w-100" 
+       style="background-color: #d3d3d3; border: 1px solid #b0b0b0; color: black;">
+       Generate Summary PDF
+    </a>
+    <a href="{{ url_for('generate_envelopes_pdf_route') }}" class="btn w-100" 
+       style="background-color: #d3d3d3; border: 1px solid #b0b0b0; color: black;">
+       Generate Envelopes PDF
+    </a>
   </div>
 </div>
 {% endblock %}
