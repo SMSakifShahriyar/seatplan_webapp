@@ -1,26 +1,20 @@
-body {
-  background-color: #f4f4f4 !important;
-}
-
-.container {
-  max-width: 600px !important;
-}
-
-.card {
-  background-color: #fff !important;
-  border: none !important;
-  border-radius: 8px !important;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1) !important;
-  padding: 30px !important;
-  margin-top: 50px !important;
-}
-
-.btn-primary {
-  background-color: #555 !important;
-  border-color: #555 !important;
-}
-
-.btn-primary:hover {
-  background-color: #444 !important;
-  border-color: #444 !important;
-}
+{% extends "base.html" %}
+{% block title %}Upload Files - PDF Generator{% endblock %}
+{% block content %}
+<div class="container my-5">
+  <div class="card mx-auto p-4" style="max-width:600px;">
+    <h2 class="text-center mb-4" style="font-weight: 400;">Upload Files</h2>
+    <form method="post" enctype="multipart/form-data">
+      <div class="mb-3">
+        <label for="pdf_input" class="form-label">Select PDF Files:</label>
+        <input type="file" name="pdf_input" id="pdf_input" class="form-control" multiple>
+      </div>
+      <div class="mb-3">
+        <label for="room_info" class="form-label">Select Room Info Excel:</label>
+        <input type="file" name="room_info" id="room_info" class="form-control">
+      </div>
+      <button type="submit" class="btn btn-custom w-100">Upload Files</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
