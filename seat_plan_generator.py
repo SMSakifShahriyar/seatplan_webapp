@@ -885,31 +885,59 @@ def generate_attendance_only():
     generate_attendance_sheets(df_students, metadata, seating_assignments, OUTPUT_FOLDER)
 
 def generate_summary_only():
+    """
+    Generates a simple summary PDF from the merged_excel.xlsx
+    using only the custom lines the user provided
+    (CUSTOM_SUMMARY_LINE1, LINE2, LINE3).
+    No seat assignment. No reading from room_info.
+    """
     try:
         df_students = pd.read_excel(MERGED_EXCEL_PATH)
     except Exception as e:
-        print(f"Error loading student data: {e}")
+        print(f"Error loading merged Excel for summary: {e}")
         return
-    try:
-        df_rooms = pd.read_excel(ROOM_INFO_PATH, sheet_name=0)
-        metadata = pd.read_excel(ROOM_INFO_PATH, sheet_name=1).iloc[0].to_dict()
-    except Exception as e:
-        print(f"Error loading room data or metadata: {e}")
-        return
-    seating_assignments = generate_seating_plan_display(df_students, df_rooms, metadata, OUTPUT_FOLDER)
-    try:
-        df_summary_metadata = pd.read_excel(ROOM_INFO_PATH, sheet_name=1)
-        summary_header = df_summary_metadata.iloc[0].to_dict()
-    except Exception as e:
-        summary_header = {
-            "Term": "Final",
-            "Semester": "Fall 2024",
-            "Shift": "Evening",
-            "Exam date": "12/4/2024",
-            "Time": "6:30PM-8:30PM",
-            "Day": "Wednesday"
-        }
-    generate_summary_pdf(df_students, seating_assignments, summary_header, os.path.join(OUTPUT_FOLDER, "Summary.pdf"))
+
+    # We'll create a simple PDF listing all students, 
+    # plus the user-input lines as a header
+    pdf = FPDF(orientation="P", unit="mm", format="A4")
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=10)
+
+    # 1) Print the user’s custom lines
+    pdf.set_font("Arial", "B", 16)
+    pdf.cell(0, 10, CUSTOM_SUMMARY_LINE1, ln=True, align="C")
+    pdf.cell(0, 10, CUSTOM_SUMMARY_LINE2, ln=True, align="C")
+    pdf.cell(0, 10, CUSTOM_SUMMARY_LINE3, ln=True, align="C")
+    pdf.ln(5)
+
+    # 2) Table header for listing students
+    pdf.set_font("Arial", "B", 10)
+    pdf.cell(40, 8, "Student ID", border=1, align="C")
+    pdf.cell(80, 8, "Student Name", border=1, align="C")
+    pdf.cell(70, 8, "Program", border=1, align="C")
+    pdf.ln(8)
+
+    # 3) Rows: We list each student's ID, Name, Program
+    pdf.set_font("Arial", "", 10)
+    for idx, row in df_students.iterrows():
+        st_id = str(row.get("Student ID", ""))
+        st_name = str(row.get("Student Name", ""))
+        prog = str(row.get("Program", ""))
+        pdf.cell(40, 8, st_id, border=1, align="C")
+        pdf.cell(80, 8, st_name, border=1, align="C")
+        pdf.cell(70, 8, prog, border=1, align="C")
+        pdf.ln(8)
+
+    # 4) Footer: total number of students
+    total_students = len(df_students)
+    pdf.ln(5)
+    pdf.cell(0, 10, f"Total Students in Merged Excel: {total_students}", ln=True, align="L")
+
+    # 5) Output the PDF
+    summary_file_path = os.path.join(OUTPUT_FOLDER, "Summary.pdf")
+    pdf.output(summary_file_path)
+    print(f"Summary PDF generated: {summary_file_path}")
+
 
 def generate_envelopes_only():
     try:
