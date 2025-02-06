@@ -7,22 +7,19 @@
     <div class="text-center mb-3">
       <img src="{{ url_for('static', filename='SEAT_PLAN_EXAMPLE.PNG') }}" alt="Seat Plan Example" class="img-fluid">
     </div>
-    <!-- NOTE the onsubmit call -->
     <form method="post" onsubmit="showProgress()">
       <div class="mb-3">
         <label for="line1" class="form-label">Header Line 1</label>
-        <input type="text" name="line1" id="line1" class="form-control" value="Seat Plan (Fall 2024)_Evening" required>
+        <input type="text" name="line1" class="form-control" value="Seat Plan (Fall 2024)_Evening" required>
       </div>
       <div class="mb-3">
         <label for="line2" class="form-label">Header Line 2</label>
-        <input type="text" name="line2" id="line2" class="form-control" value="Exam Date: 12-04-2024 Time: 6:30PM-8:30PM" required>
+        <input type="text" name="line2" class="form-control" value="Exam Date: 12-04-2024 Time: 6:30PM-8:30PM" required>
       </div>
       <button type="submit" class="btn btn-custom w-100">Generate Seat Plan PDF</button>
     </form>
 
-    <!-- Spinner container, hidden by default -->
     <div id="loadingIndicator" class="text-center mt-4" style="display: none;">
-      <!-- Bootstrap spinner -->
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Generating PDF...</span>
       </div>
@@ -35,15 +32,10 @@
 {% block scripts %}
 <script>
 function showProgress() {
-  // Show the spinner
   document.getElementById('loadingIndicator').style.display = 'block';
-
-  // OPTIONAL: auto-hide after 10s
   setTimeout(() => {
     document.getElementById('loadingIndicator').style.display = 'none';
   }, 10000);
-
-  // The form will now submit, user sees spinner for 10s or until page changes
 }
 </script>
 {% endblock %}

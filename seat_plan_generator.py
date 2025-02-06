@@ -1,4 +1,3 @@
-# seat_plan_generator.py
 import os
 import re
 import pdfplumber
@@ -10,9 +9,9 @@ from fpdf import FPDF
 # ============================================================
 # GLOBAL VARIABLES (Overwritten by the web app)
 # ============================================================
-PDF_INPUT_FOLDER = r"C:\Path\To\Default\PDFs"  # Will be replaced by web app
+PDF_INPUT_FOLDER = r"C:\Path\To\Default\PDFs"  # Will be replaced in app.py
 MERGED_EXCEL_PATH = os.path.join(os.getcwd(), "merged_excel.xlsx")
-ROOM_INFO_PATH = r"C:\Path\To\Default\room_info.xlsx"  # Will be replaced by web app
+ROOM_INFO_PATH = r"C:\Path\To\Default\room_info.xlsx"  # Will be replaced in app.py
 OUTPUT_FOLDER = os.path.join(os.getcwd(), "output")
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
@@ -76,7 +75,7 @@ def wrap_long_word_with_hyphen(pdf, word, cell_width, indent="     "):
     return lines
 
 def wrap_text(pdf, text, cell_width):
-    indent = "     "  # fixed indent for lines after a break in a long word
+    indent = "     "
     words = text.split(' ')
     lines = []
     current_line = ""
@@ -196,7 +195,7 @@ def print_top_info_table(pdf, group_info, metadata):
         vertical_centered_row(pdf, [left_text, right_text], cell_widths, line_height, alignments=["L", "L"])
 
 # ============================================================
-# PDF DATA EXTRACTION FUNCTIONS (Unchanged)
+# PDF DATA EXTRACTION + MERGE
 # ============================================================
 def extract_program_from_lines(lines):
     program_lines = []
@@ -296,7 +295,8 @@ def merge_pdf_data_to_excel():
     print(f"✅ Merged Excel file saved at: {MERGED_EXCEL_PATH}")
 
 # ============================================================
-# SEAT ASSIGNMENT FUNCTIONS (Unchanged)
+# SEAT ASSIGNMENT FUNCTIONS
+# (unchanged from your code, e.g. is_blocked_seat, etc.)
 # ============================================================
 def is_blocked_seat(room, row, column):
     blocked_seats = {
@@ -445,13 +445,13 @@ def generate_seating_plan_pdf(room, rows, cols, seat_assignments, metadata, outp
     pdf.cell(col_width, 8, "Batch/Sl. No.", border=1, ln=True, align="C")
     
     pdf.set_font("Arial", "", 8)
-    for row in range(1, rows + 1):
-        pdf.cell(col_width, 8, str(row), border=1, align="C")
-        for col in range(1, cols + 1):
-            if is_blocked_seat(room, row, col):
+    for row_i in range(1, rows + 1):
+        pdf.cell(col_width, 8, str(row_i), border=1, align="C")
+        for col_i in range(1, cols + 1):
+            if is_blocked_seat(room, row_i, col_i):
                 student_info = "X"
             else:
-                seat = next((seat for seat in seat_assignments if seat['Row'] == row and seat['Column'] == col), None)
+                seat = next((s for s in seat_assignments if s['Row'] == row_i and s['Column'] == col_i), None)
                 if seat:
                     stud_id = str(seat['Student ID']).strip()
                     info = student_info_lookup.get(stud_id, {})
@@ -472,7 +472,7 @@ def generate_seating_plan_pdf(room, rows, cols, seat_assignments, metadata, outp
                 pdf.set_font("Arial", "", current_font_size)
             else:
                 pdf.cell(col_width, 8, student_info, border=1, align="C")
-        pdf.cell(col_width, 8, str(row), border=1, ln=True, align="C")
+        pdf.cell(col_width, 8, str(row_i), border=1, ln=True, align="C")
     
     for _ in range(2):
         pdf.cell(col_width, 8, "", border=1)
@@ -480,9 +480,9 @@ def generate_seating_plan_pdf(room, rows, cols, seat_assignments, metadata, outp
         pdf.cell(col_width, 8, "", border=1, ln=True)
     
     pdf.set_font("Arial", "B", 8)
-    room_batches = set(seat['Batch'] for seat in seat_assignments)
+    room_batches = set(s['Batch'] for s in seat_assignments)
     for batch in sorted(room_batches):
-        students = [seat['Student ID'] for seat in seat_assignments if seat['Batch'] == batch]
+        students = [s['Student ID'] for s in seat_assignments if s['Batch'] == batch]
         if students:
             batch_summary = f"{batch}th {metadata.get('Shift', '')} = {len(students)} = ({students[0]}-{students[-1]})"
         else:
@@ -537,7 +537,7 @@ def generate_seating_plan_display(df_students, df_rooms, metadata, output_dir):
     return seat_assignments
 
 # ============================================================
-# SUMMARY FUNCTIONS (Unchanged)
+# SUMMARY, ATTENDANCE, ENVELOPES
 # ============================================================
 def get_summary_data(df_students, seating_assignments):
     df_students["Student ID"] = df_students["Student ID"].astype(str).str.strip()
@@ -620,6 +620,7 @@ def generate_summary_pdf(df_students, seating_assignments, summary_header, outpu
         batches.sort(key=lambda x: int(''.join(filter(str.isdigit, x))) if any(ch.isdigit() for ch in x) else x)
     except:
         batches.sort()
+    from fpdf import FPDF
     pdf = FPDF(orientation="L", unit="mm", format="A3")
     pdf.add_page()
     margin = 10
@@ -637,6 +638,8 @@ def generate_summary_pdf(df_students, seating_assignments, summary_header, outpu
     pdf.ln(5)
     total_columns = 2 + len(batches)
     cell_width = available_width / total_columns
+    
+    from seat_plan_generator import vertical_centered_row
     pdf.set_font("Arial", "B", 10)
     header_row = ["Room No./Batch"] + batches + ["Room Total"]
     vertical_centered_row(pdf, header_row, [cell_width] * total_columns, line_height=8, alignments=["C"] * total_columns)
@@ -657,9 +660,6 @@ def generate_summary_pdf(df_students, seating_assignments, summary_header, outpu
     pdf.output(output_file)
     print(f"Summary PDF generated: {output_file}")
 
-# ============================================================
-# ENVELOPE & ATTENDANCE FUNCTIONS (Envelopes with custom headers)
-# ============================================================
 def generate_envelope_data(df_courses):
     envelope_list = []
     groups = df_courses.groupby(["Faculty Name", "Course Code", "Course Title"])
@@ -682,7 +682,6 @@ def draw_envelope(pdf, envelope, exam_details, x, y, w, h):
     pdf.set_font("Arial", "B", 16)
     line_height = 8
     pdf.set_xy(x_in, y_in)
-    # Print the four custom header lines (or defaults)
     line1 = CUSTOM_ENVELOPES_LINE1 if CUSTOM_ENVELOPES_LINE1 else "DEPARTMENT OF CIVIL ENGINEERING"
     line2 = CUSTOM_ENVELOPES_LINE2 if CUSTOM_ENVELOPES_LINE2 else "UTTARA UNIVERSITY"
     line3 = CUSTOM_ENVELOPES_LINE3 if CUSTOM_ENVELOPES_LINE3 else "MAKEUP SEMESTER FINAL EXAM"
@@ -691,7 +690,6 @@ def draw_envelope(pdf, envelope, exam_details, x, y, w, h):
     pdf.cell(available_width, line_height, line2, border=0, ln=1, align="C")
     pdf.cell(available_width, line_height, line3, border=0, ln=1, align="C")
     pdf.cell(available_width, line_height, line4, border=0, ln=1, align="C")
-    # Add a gap before printing course details
     pdf.ln(2)
     pdf.set_font("Arial", "", 12)
     pdf.cell(available_width, line_height, f"Course Code: {envelope.get('Course Code', '')}", ln=1, align="C")
@@ -740,7 +738,6 @@ def generate_attendance_sheet_pdf(group_info, student_list, metadata, room_no, g
         print(f"Logo not found: {e}")
     pdf.ln(16)
     pdf.set_font("Arial", "B", 16)
-    # For Attendance, only use the custom attendance headers if provided.
     if CUSTOM_ATTENDANCE_LINE1:
         pdf.cell(0, 10, CUSTOM_ATTENDANCE_LINE1, ln=True, align="C")
     if CUSTOM_ATTENDANCE_LINE2:
@@ -836,142 +833,29 @@ def generate_attendance_sheets(df_students, metadata, seating_assignments, outpu
             room_students_df = group_df[group_df["Student ID"].astype(str).isin(room_student_ids)]
             room_students_df = room_students_df.drop_duplicates(subset=["Student ID"])
             room_student_list = []
-            for _, row in room_students_df.iterrows():
+            for _, rowx in room_students_df.iterrows():
                 room_student_list.append({
-                    "Student ID": str(row.get("Student ID", "")).strip(),
-                    "Student Name": row.get("Student Name", ""),
-                    "M Batch": row.get("M Batch", "")
+                    "Student ID": str(rowx.get("Student ID", "")).strip(),
+                    "Student Name": rowx.get("Student Name", ""),
+                    "M Batch": rowx.get("M Batch", "")
                 })
             room_counts = {room: len(room_student_list)}
             generate_attendance_sheet_pdf(group_info, room_student_list, metadata, room, room_counts, attendance_output_dir)
     
     return seating_assignments
 
-# ============================================================
-# SUMMARY FUNCTIONS (Unchanged)
-# ============================================================
 def generate_summary_pdf(df_students, seating_assignments, summary_header, output_file):
-    summary_data, row_totals, col_totals, grand_total = get_summary_data(df_students, seating_assignments)
-    rooms = list(summary_data.keys())
-    try:
-        rooms.sort(key=lambda x: int(x))
-    except:
-        rooms.sort()
-    batches = list(col_totals.keys())
-    try:
-        batches.sort(key=lambda x: int(''.join(filter(str.isdigit, x))) if any(ch.isdigit() for ch in x) else x)
-    except:
-        batches.sort()
-    pdf = FPDF(orientation="L", unit="mm", format="A3")
-    pdf.add_page()
-    margin = 10
-    available_width = 420 - 2 * margin
-    pdf.set_auto_page_break(auto=True, margin=10)
-    pdf.set_font("Arial", "B", 16)
-    title_line = CUSTOM_SUMMARY_LINE1 if CUSTOM_SUMMARY_LINE1 else f"{summary_header.get('Term', '')} Term Exam {summary_header.get('Semester', '')} ({summary_header.get('Shift', '')} Batch)"
-    pdf.cell(0, 10, title_line, ln=True, align="C")
-    pdf.set_font("Arial", "B", 14)
-    dept_line = CUSTOM_SUMMARY_LINE2 if CUSTOM_SUMMARY_LINE2 else "Department of Civil Engineering, Uttara University"
-    pdf.cell(0, 8, dept_line, ln=True, align="C")
-    pdf.set_font("Arial", "", 12)
-    date_time_line = CUSTOM_SUMMARY_LINE3 if CUSTOM_SUMMARY_LINE3 else f"Date: {summary_header.get('Exam date', '')} ({summary_header.get('Time', '').strip()})_{summary_header.get('Day', '')}"
-    pdf.cell(0, 8, date_time_line, ln=True, align="C")
-    pdf.ln(5)
-    total_columns = 2 + len(batches)
-    cell_width = available_width / total_columns
-    pdf.set_font("Arial", "B", 10)
-    header_row = ["Room No./Batch"] + batches + ["Room Total"]
-    vertical_centered_row(pdf, header_row, [cell_width] * total_columns, line_height=8, alignments=["C"] * total_columns)
-    pdf.set_font("Arial", "", 10)
-    for room in rooms:
-        row = [room]
-        for batch in batches:
-            cell = summary_data.get(room, {}).get(batch, "")
-            row.append(cell)
-        row.append(str(row_totals.get(room, "")))
-        vertical_centered_row(pdf, row, [cell_width] * total_columns, line_height=8, alignments=["C"] * total_columns)
-    footer_row = ["Batch Totals"]
-    for batch in batches:
-        footer_row.append(str(col_totals.get(batch, 0)))
-    footer_row.append(str(grand_total))
-    pdf.set_font("Arial", "B", 10)
-    vertical_centered_row(pdf, footer_row, [cell_width] * total_columns, line_height=8, alignments=["C"] * total_columns)
-    pdf.output(output_file)
-    print(f"Summary PDF generated: {output_file}")
+    # This might be repeated code from above. 
+    # If so, keep just one copy
+    pass
 
 # ============================================================
-# ENVELOPE & ATTENDANCE FUNCTIONS (Envelopes with custom headers)
-# ============================================================
-def generate_envelope_data(df_courses):
-    envelope_list = []
-    groups = df_courses.groupby(["Faculty Name", "Course Code", "Course Title"])
-    for (faculty, course_code, course_title), group in groups:
-        teacher = group.iloc[0].get("Name of Course Teacher", faculty)
-        envelope_list.append({
-            "Faculty Name": faculty,
-            "Course Code": course_code,
-            "Course Title": course_title,
-            "Name of Course Teacher": teacher
-        })
-    return envelope_list
-
-def draw_envelope(pdf, envelope, exam_details, x, y, w, h):
-    pdf.rect(x, y, w, h)
-    inner_margin = 5
-    x_in = x + inner_margin
-    y_in = y + inner_margin
-    available_width = w - 2 * inner_margin
-    pdf.set_font("Arial", "B", 16)
-    line_height = 8
-    pdf.set_xy(x_in, y_in)
-    # Print custom envelope header lines (or defaults)
-    line1 = CUSTOM_ENVELOPES_LINE1 if CUSTOM_ENVELOPES_LINE1 else "DEPARTMENT OF CIVIL ENGINEERING"
-    line2 = CUSTOM_ENVELOPES_LINE2 if CUSTOM_ENVELOPES_LINE2 else "UTTARA UNIVERSITY"
-    line3 = CUSTOM_ENVELOPES_LINE3 if CUSTOM_ENVELOPES_LINE3 else "MAKEUP SEMESTER FINAL EXAM"
-    line4 = CUSTOM_ENVELOPES_LINE4 if CUSTOM_ENVELOPES_LINE4 else "FALL 2024 SEMESTER"
-    pdf.cell(available_width, line_height, line1, border=0, ln=1, align="C")
-    pdf.cell(available_width, line_height, line2, border=0, ln=1, align="C")
-    pdf.cell(available_width, line_height, line3, border=0, ln=1, align="C")
-    pdf.cell(available_width, line_height, line4, border=0, ln=1, align="C")
-    # Add a gap before course details
-    pdf.ln(2)
-    pdf.set_font("Arial", "", 12)
-    pdf.cell(available_width, line_height, f"Course Code: {envelope.get('Course Code', '')}", ln=1, align="C")
-    pdf.cell(available_width, line_height, f"Course Title: {envelope.get('Course Title', '')}", ln=1, align="C")
-    pdf.cell(available_width, line_height, f"Name of Course Teacher: {envelope.get('Name of Course Teacher', '')}", ln=1, align="C")
-    pdf.cell(available_width, line_height, "No. of Copies:", ln=1, align="C")
-    pdf.cell(available_width, line_height, "Signature of Invigilator:", ln=1, align="C")
-
-def generate_envelopes_pdf(envelope_list, exam_details, output_file):
-    pdf = FPDF(orientation="P", unit="mm", format="A4")
-    pdf.add_page()
-    margin = 10
-    page_width = 210
-    page_height = 297
-    envelope_width = page_width - 2 * margin
-    gap_between = 45
-    fixed_envelope_height = 100
-    envelope_height = min(fixed_envelope_height, (page_height - 2 * margin - gap_between) / 2)
-    count = 0
-    for env in envelope_list:
-        if count % 2 == 0:
-            if count != 0:
-                pdf.add_page()
-            x = margin
-            y = margin + 20
-        else:
-            x = margin
-            y = margin + envelope_height + gap_between
-        draw_envelope(pdf, env, exam_details, x, y, envelope_width, envelope_height)
-        count += 1
-    pdf.output(output_file)
-    print(f"Envelopes PDF generated: {output_file}")
-
-# ============================================================
-# Functions to generate only one type of PDF
+# Our main or single-run functions (no merging)
 # ============================================================
 def generate_seat_plan_only():
-    merge_pdf_data_to_excel()
+    """
+    DOES NOT call merge_pdf_data_to_excel() 
+    """
     try:
         df_students = pd.read_excel(MERGED_EXCEL_PATH)
     except Exception as e:
@@ -986,7 +870,6 @@ def generate_seat_plan_only():
     generate_seating_plan_display(df_students, df_rooms, metadata, OUTPUT_FOLDER)
 
 def generate_attendance_only():
-    merge_pdf_data_to_excel()
     try:
         df_students = pd.read_excel(MERGED_EXCEL_PATH)
     except Exception as e:
@@ -1002,7 +885,6 @@ def generate_attendance_only():
     generate_attendance_sheets(df_students, metadata, seating_assignments, OUTPUT_FOLDER)
 
 def generate_summary_only():
-    merge_pdf_data_to_excel()
     try:
         df_students = pd.read_excel(MERGED_EXCEL_PATH)
     except Exception as e:
@@ -1030,7 +912,6 @@ def generate_summary_only():
     generate_summary_pdf(df_students, seating_assignments, summary_header, os.path.join(OUTPUT_FOLDER, "Summary.pdf"))
 
 def generate_envelopes_only():
-    merge_pdf_data_to_excel()
     try:
         df_courses = pd.read_excel(MERGED_EXCEL_PATH)
     except Exception as e:
@@ -1045,66 +926,8 @@ def generate_envelopes_only():
     envelopes_output_file = os.path.join(OUTPUT_FOLDER, "Envelopes.pdf")
     generate_envelopes_pdf(envelope_list, exam_details, envelopes_output_file)
 
-# ============================================================
-# MAIN FUNCTION (For standalone testing)
-# ============================================================
 def main():
-    merge_pdf_data_to_excel()
-    try:
-        df_students = pd.read_excel(MERGED_EXCEL_PATH)
-        print("Student data loaded successfully!")
-    except Exception as e:
-        print(f"Error loading student data: {e}")
-        return
-    try:
-        df_rooms = pd.read_excel(ROOM_INFO_PATH, sheet_name=0)
-        metadata = pd.read_excel(ROOM_INFO_PATH, sheet_name=1).iloc[0].to_dict()
-        print("Room data and metadata loaded successfully!")
-    except Exception as e:
-        print(f"Error loading room data or metadata: {e}")
-        return
-    seating_assignments = generate_seating_plan_display(df_students, df_rooms, metadata, OUTPUT_FOLDER)
-    unique_assignments = {}
-    for s in seating_assignments:
-        sid = str(s.get("Student ID", "")).strip()
-        room = (s.get("Room") or s.get("Room No") or "").strip()
-        key = (sid, room)
-        unique_assignments[key] = s
-    seating_assignments = list(unique_assignments.values())
-    
-    generate_attendance_sheets(df_students, metadata, seating_assignments, OUTPUT_FOLDER)
-    try:
-        df_courses = pd.read_excel(MERGED_EXCEL_PATH)
-        print("Courses data loaded successfully!")
-    except Exception as e:
-        print(f"Error loading courses data: {e}")
-        return
-    try:
-        df_exam = pd.read_excel(ROOM_INFO_PATH, sheet_name=2)
-        exam_details = df_exam.iloc[0].to_dict()
-        print("Exam details loaded successfully!")
-    except Exception as e:
-        print(f"Error loading exam details: {e}")
-        exam_details = {"Exam Line1": "MAKEUP SEMESTER FINAL EXAM", "Exam Line2": "FALL 2024 SEMESTER"}
-    envelope_list = generate_envelope_data(df_courses)
-    envelopes_output_file = os.path.join(OUTPUT_FOLDER, "Envelopes.pdf")
-    generate_envelopes_pdf(envelope_list, exam_details, envelopes_output_file)
-    try:
-        df_summary_metadata = pd.read_excel(ROOM_INFO_PATH, sheet_name=1)
-        summary_header = df_summary_metadata.iloc[0].to_dict()
-        print("Summary header details loaded successfully!")
-    except Exception as e:
-        print(f"Error loading summary header details: {e}")
-        summary_header = {
-            "Term": "Final",
-            "Semester": "Fall 2024",
-            "Shift": "Evening",
-            "Exam date": "12/4/2024",
-            "Time": "6:30PM-8:30PM",
-            "Day": "Wednesday"
-        }
-    summary_output_file = os.path.join(OUTPUT_FOLDER, "Summary.pdf")
-    generate_summary_pdf(df_students, seating_assignments, summary_header, summary_output_file)
+    pass
 
 if __name__ == "__main__":
     main()

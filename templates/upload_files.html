@@ -15,7 +15,8 @@
 
   <div class="card mx-auto p-4" style="max-width:600px;">
     <h2 class="text-center mb-4" style="font-weight: 400;">Upload Files</h2>
-    <form method="post" enctype="multipart/form-data">
+    <!-- Show spinner on submit -->
+    <form method="post" enctype="multipart/form-data" onsubmit="showUploadSpinner()">
       <div class="mb-3">
         <label for="pdf_input" class="form-label">Select PDF Files:</label>
         <input type="file" name="pdf_input" id="pdf_input" class="form-control" multiple>
@@ -27,10 +28,29 @@
       <button type="submit" class="btn btn-custom w-100">Upload Files</button>
     </form>
 
-    <!-- Extra button to go back to Dashboard -->
+    <!-- Extra button to go back to dashboard -->
     <div class="text-center mt-3">
       <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
     </div>
+
+    <div id="uploadSpinner" class="text-center mt-4" style="display: none;">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Merging PDFs...</span>
+      </div>
+      <p class="mt-2">Merging PDFs into Excel... Please wait.</p>
+    </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showUploadSpinner() {
+  document.getElementById('uploadSpinner').style.display = 'block';
+  // We can hide it after 30 sec if you want:
+  setTimeout(() => {
+    document.getElementById('uploadSpinner').style.display = 'none';
+  }, 30000);
+}
+</script>
 {% endblock %}
