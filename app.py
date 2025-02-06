@@ -12,7 +12,7 @@ app.secret_key = "my-fixed-secret-key-please-change"
 
 default_users = {
     "isakha": "iloveuu2024",
-    "user2": "password2"
+    "munna": "munna54321"
 }
 import json
 import pandas as pd
