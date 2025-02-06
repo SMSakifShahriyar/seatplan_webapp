@@ -7,25 +7,44 @@
     <div class="text-center mb-3">
       <img src="{{ url_for('static', filename='ENVELOPES_EXAMPLE.PNG') }}" alt="Envelopes Example" class="img-fluid">
     </div>
-    <form method="post">
+    <form method="post" onsubmit="showProgress()">
       <div class="mb-3">
         <label for="line1" class="form-label">Header Line 1</label>
-        <input type="text" name="line1" id="line1" class="form-control" value="DEPARTMENT OF CIVIL ENGINEERING" required>
+        <input type="text" name="line1" id="line1" class="form-control"
+               value="DEPARTMENT OF CIVIL ENGINEERING" required>
       </div>
       <div class="mb-3">
         <label for="line2" class="form-label">Header Line 2</label>
-        <input type="text" name="line2" id="line2" class="form-control" value="UTTARA UNIVERSITY" required>
+        <input type="text" name="line2" id="line2" class="form-control"
+               value="UTTARA UNIVERSITY" required>
       </div>
       <div class="mb-3">
         <label for="line3" class="form-label">Header Line 3</label>
-        <input type="text" name="line3" id="line3" class="form-control" value="MAKEUP SEMESTER FINAL EXAM" required>
+        <input type="text" name="line3" id="line3" class="form-control"
+               value="MAKEUP SEMESTER FINAL EXAM" required>
       </div>
       <div class="mb-3">
         <label for="line4" class="form-label">Header Line 4</label>
-        <input type="text" name="line4" id="line4" class="form-control" value="FALL 2024 SEMESTER" required>
+        <input type="text" name="line4" id="line4" class="form-control"
+               value="FALL 2024 SEMESTER" required>
       </div>
       <button type="submit" class="btn btn-custom w-100">Generate Envelopes PDF</button>
     </form>
+
+    <div id="loadingIndicator" class="text-center mt-4" style="display: none;">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Generating PDF...</span>
+      </div>
+      <p class="mt-2">Please wait while your PDF is being generated...</p>
+    </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showProgress() {
+  document.getElementById('loadingIndicator').style.display = 'block';
+}
+</script>
 {% endblock %}

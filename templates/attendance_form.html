@@ -5,19 +5,37 @@
   <div class="card mx-auto p-4" style="max-width:600px;">
     <h2 class="text-center mb-3" style="font-weight: 400;">Generate Attendance Sheet PDF</h2>
     <div class="text-center mb-3">
-      <img src="{{ url_for('static', filename='ATTENDANCE_SHEET_EXAMPLE.PNG') }}" alt="Attendance Sheet Example" class="img-fluid">
+      <img src="{{ url_for('static', filename='ATTENDANCE_SHEET_EXAMPLE.PNG') }}" alt="Attendance Sheet Example"
+           class="img-fluid">
     </div>
-    <form method="post">
+    <form method="post" onsubmit="showProgress()">
       <div class="mb-3">
         <label for="line1" class="form-label">Header Line 1</label>
-        <input type="text" name="line1" id="line1" class="form-control" value="UTTARA UNI" required>
+        <input type="text" name="line1" id="line1" class="form-control"
+               value="UTTARA UNI" required>
       </div>
       <div class="mb-3">
         <label for="line2" class="form-label">Header Line 2</label>
-        <input type="text" name="line2" id="line2" class="form-control" value="SPRING 2025 - FINAL TERM" required>
+        <input type="text" name="line2" id="line2" class="form-control"
+               value="SPRING 2025 - FINAL TERM" required>
       </div>
       <button type="submit" class="btn btn-custom w-100">Generate Attendance Sheet PDF</button>
     </form>
+
+    <div id="loadingIndicator" class="text-center mt-4" style="display: none;">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Generating PDF...</span>
+      </div>
+      <p class="mt-2">Please wait while your PDF is being generated...</p>
+    </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showProgress() {
+  document.getElementById('loadingIndicator').style.display = 'block';
+}
+</script>
 {% endblock %}
