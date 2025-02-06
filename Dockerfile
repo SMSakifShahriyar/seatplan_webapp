@@ -27,5 +27,5 @@ ENV FLASK_ENV=production
 RUN pip install gunicorn
 
 # Run the application using Gunicorn, binding to all network interfaces on port 8000
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--timeout", "120", "app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--timeout", "180", "app:app"]
 
