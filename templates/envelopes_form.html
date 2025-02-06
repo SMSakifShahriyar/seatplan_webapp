@@ -45,6 +45,9 @@
 <script>
 function showProgress() {
   document.getElementById('loadingIndicator').style.display = 'block';
+  setTimeout(() => {
+    document.getElementById('loadingIndicator').style.display = 'none';
+  }, 10000);
 }
 </script>
 {% endblock %}
