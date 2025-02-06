@@ -1,25 +1,27 @@
 import os
 import json
 from functools import wraps
-
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file
 import zipfile
+import pandas as pd
 
 import seat_plan_generator as spg  # The PDF-generation module
 
 app = Flask(__name__)
 app.secret_key = "my-fixed-secret-key-please-change"
 
+# Default user credentials if no environment variable provided
 default_users = {
     "isakha": "iloveuu2024",
-    "munna": "munna54321"
+    "munna":  "munna54321"
 }
-import json
-import pandas as pd
-
 USERS = json.loads(os.environ.get("USERS_CREDENTIALS", json.dumps(default_users)))
 
 def get_session_folder():
+    """
+    Returns a folder path based on the logged-in username.
+    Creates the folder if it doesn't exist yet.
+    """
     username = session.get("username", "default")
     folder = os.path.join(os.getcwd(), "uploads", username)
     if not os.path.exists(folder):
@@ -67,58 +69,55 @@ def dashboard():
 @login_required
 def upload_files():
     """
-    Step:
-    1) User uploads PDF(s) + room info excel
-    2) We set spg.PDF_INPUT_FOLDER = base_dir
-    3) spg.ROOM_INFO_PATH = the user's excel
-    4) We call spg.merge_pdf_data_to_excel() ONCE, with spinner
+    1) User uploads multiple PDF(s) + room_info.xlsx
+    2) We set spg.PDF_INPUT_FOLDER + spg.ROOM_INFO_PATH
+    3) spg.merge_pdf_data_to_excel() is called once here
     """
     if request.method == "POST":
         base_dir = get_session_folder()
 
-        # 1) Save PDFs
+        # Save PDFs
         pdf_files = request.files.getlist("pdf_input")
         for pdf in pdf_files:
             if pdf and pdf.filename.lower().endswith(".pdf"):
                 pdf.save(os.path.join(base_dir, pdf.filename))
 
-        # 2) Save Excel
+        # Save Excel
         excel_file = request.files.get("room_info")
         excel_path = None
         if excel_file and excel_file.filename.lower().endswith((".xls", ".xlsx")):
             excel_path = os.path.join(base_dir, excel_file.filename)
             excel_file.save(excel_path)
 
-        # 3) Override spg's folder + room path
+        # Set the seat_plan_generator folder/excel
         spg.PDF_INPUT_FOLDER = base_dir
         if excel_path:
             spg.ROOM_INFO_PATH = excel_path
 
-        # 4) Merge once
+        # Merge once
         spg.merge_pdf_data_to_excel()
-        flash("PDFs merged into Excel successfully! Now you can generate any PDF quickly.")
+
+        flash("PDFs merged into Excel successfully! Now you can generate any PDF.")
         return redirect(url_for("upload_files"))
+
     return render_template("upload_files.html")
 
-# Now the 4 generate routes do NOT call merging again.
+# ================================
+# PDF Generation Routes
+# ================================
 @app.route("/generate_seat_plan", methods=["GET", "POST"])
 @login_required
 def generate_seat_plan_pdf():
     if request.method == "POST":
-        # Just do seat plan, no merging
         base_dir = get_session_folder()
-        # override if needed
         spg.PDF_INPUT_FOLDER = base_dir
 
-        # If user had an excel, we store it in spg.ROOM_INFO_PATH as well, if you want
-        # but we already did that in upload, so it might be optional unless we store that path in session
-        # spg.ROOM_INFO_PATH = ???
-
-        custom_line1 = request.form.get("line1")
-        custom_line2 = request.form.get("line2")
-        spg.set_custom_seatplan_headers(custom_line1, custom_line2)
+        line1 = request.form.get("line1")
+        line2 = request.form.get("line2")
+        spg.set_custom_seatplan_headers(line1, line2)
         spg.generate_seat_plan_only()
 
+        # Zip up the seat plan output(s)
         output_zip_path = os.path.join(base_dir, "seat_plan_output.zip")
         with zipfile.ZipFile(output_zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             for root, dirs, files in os.walk(spg.OUTPUT_FOLDER):
@@ -127,6 +126,7 @@ def generate_seat_plan_pdf():
                         file_path = os.path.join(root, file)
                         arcname = os.path.relpath(file_path, spg.OUTPUT_FOLDER)
                         zipf.write(file_path, arcname)
+
         return send_file(output_zip_path, as_attachment=True)
     return render_template("seat_plan_form.html")
 
@@ -137,9 +137,9 @@ def generate_attendance_pdf():
         base_dir = get_session_folder()
         spg.PDF_INPUT_FOLDER = base_dir
 
-        custom_line1 = request.form.get("line1")
-        custom_line2 = request.form.get("line2")
-        spg.set_custom_attendance_headers(custom_line1, custom_line2)
+        line1 = request.form.get("line1")
+        line2 = request.form.get("line2")
+        spg.set_custom_attendance_headers(line1, line2)
         spg.generate_attendance_only()
 
         output_zip_path = os.path.join(base_dir, "attendance_output.zip")
@@ -150,6 +150,7 @@ def generate_attendance_pdf():
                         file_path = os.path.join(root, file)
                         arcname = os.path.relpath(file_path, spg.OUTPUT_FOLDER)
                         zipf.write(file_path, arcname)
+
         return send_file(output_zip_path, as_attachment=True)
     return render_template("attendance_form.html")
 
@@ -160,10 +161,10 @@ def generate_summary_pdf_route():
         base_dir = get_session_folder()
         spg.PDF_INPUT_FOLDER = base_dir
 
-        custom_line1 = request.form.get("line1")
-        custom_line2 = request.form.get("line2")
-        custom_line3 = request.form.get("line3")
-        spg.set_custom_summary_headers(custom_line1, custom_line2, custom_line3)
+        line1 = request.form.get("line1")
+        line2 = request.form.get("line2")
+        line3 = request.form.get("line3")
+        spg.set_custom_summary_headers(line1, line2, line3)
         spg.generate_summary_only()
 
         output_zip_path = os.path.join(base_dir, "summary_output.zip")
@@ -174,6 +175,7 @@ def generate_summary_pdf_route():
                         file_path = os.path.join(root, file)
                         arcname = os.path.relpath(file_path, spg.OUTPUT_FOLDER)
                         zipf.write(file_path, arcname)
+
         return send_file(output_zip_path, as_attachment=True)
     return render_template("summary_form.html")
 
@@ -184,11 +186,11 @@ def generate_envelopes_pdf_route():
         base_dir = get_session_folder()
         spg.PDF_INPUT_FOLDER = base_dir
 
-        custom_line1 = request.form.get("line1")
-        custom_line2 = request.form.get("line2")
-        custom_line3 = request.form.get("line3")
-        custom_line4 = request.form.get("line4")
-        spg.set_custom_envelopes_headers(custom_line1, custom_line2, custom_line3, custom_line4)
+        line1 = request.form.get("line1")
+        line2 = request.form.get("line2")
+        line3 = request.form.get("line3")
+        line4 = request.form.get("line4")
+        spg.set_custom_envelopes_headers(line1, line2, line3, line4)
         spg.generate_envelopes_only()
 
         output_zip_path = os.path.join(base_dir, "envelopes_output.zip")
@@ -199,6 +201,7 @@ def generate_envelopes_pdf_route():
                         file_path = os.path.join(root, file)
                         arcname = os.path.relpath(file_path, spg.OUTPUT_FOLDER)
                         zipf.write(file_path, arcname)
+
         return send_file(output_zip_path, as_attachment=True)
     return render_template("envelopes_form.html")
 
