@@ -13,7 +13,8 @@ app.secret_key = "my-fixed-secret-key-please-change"
 # Default user credentials (can be overridden by the environment)
 default_users = {
     "isakha": "iloveuu2024",
-    "munna":  "munna54321"
+    "munna":  "munna54321",
+    "mdzakariahabib":"zakaria123"
 }
 USERS = json.loads(os.environ.get("USERS_CREDENTIALS", json.dumps(default_users)))
 
