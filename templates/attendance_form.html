@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Generate Attendance Sheet PDF{% endblock %}
+
 {% block content %}
 <div class="container my-5">
-  <div class="card mx-auto p-4" style="max-width:600px;">
-    <h2 class="text-center mb-3" style="font-weight: 400;">Generate Attendance Sheet PDF</h2>
+  <div class="card mx-auto p-4" style="max-width: 600px;">
+    <h2 class="text-center mb-3">Generate Attendance Sheet PDF</h2>
     <div class="text-center mb-3">
       <img src="{{ url_for('static', filename='ATTENDANCE_SHEET_EXAMPLE.PNG') }}" alt="Attendance Sheet Example" class="img-fluid">
     </div>
@@ -15,6 +16,10 @@
       <div class="mb-3">
         <label for="line2" class="form-label">Header Line 2</label>
         <input type="text" name="line2" id="line2" class="form-control" value="SPRING 2025 - FINAL TERM" required>
+      </div>
+      <div class="mb-3">
+        <label for="program" class="form-label">Program</label>
+        <input type="text" name="program" id="program" class="form-control" value="BSc in Civil Engineering (For Diploma Holder)" required>
       </div>
       <button type="submit" class="btn btn-custom w-100">Generate Attendance Sheet PDF</button>
     </form>
@@ -33,7 +38,7 @@
 <script>
 function showProgress() {
   document.getElementById('loadingIndicator').style.display = 'block';
-  // hide after 10 seconds
+  // Optionally hide the indicator after 10 seconds
   setTimeout(() => {
     document.getElementById('loadingIndicator').style.display = 'none';
   }, 10000);
