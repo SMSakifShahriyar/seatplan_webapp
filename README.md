@@ -1,4 +1,3 @@
-Here’s a clean and GitHub-friendly version of your description:
 
 ---
 
